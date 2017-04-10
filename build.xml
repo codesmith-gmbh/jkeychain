@@ -67,8 +67,10 @@
 	</target>
 
 	<target name="jar" depends="build">
-		<mkdir dir="dist" />
-		<jar destfile="dist/osxkeychain.jar" basedir="lib" index="true" />
+		<mkdir dir="lib" />
+		<jar destfile="lib/osxkeychain-0.0.1.jar">
+			<fileset dir="lib/" includes="pt/**,osxkeychain.so"/>
+		</jar>
 	</target>
 
 	<target name="dist" depends="jar,doc">

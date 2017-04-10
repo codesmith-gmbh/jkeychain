@@ -1,3 +1,4 @@
+.DS_Store
 lib/
 test/c/test
 test/c/fakejni.o
