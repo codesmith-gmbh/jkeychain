@@ -1,29 +1,4 @@
 <?xml version="1.0" ?>
-<!--
-	Copyright (c) 2011, Conor McDermottroe
-	All rights reserved.
-
-	Redistribution and use in source and binary forms, with or without
-	modification, are permitted provided that the following conditions are met:
-
-	- Redistributions of source code must retain the above copyright notice,
-	  this list of conditions and the following disclaimer.
-	- Redistributions in binary form must reproduce the above copyright notice,
-	  this list of conditions and the following disclaimer in the documentation
-	  and/or other materials provided with the distribution.
-
-	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-	POSSIBILITY OF SUCH DAMAGE.
- -->
 <project name="osxkeychain" default="jar" basedir=".">
 	<target name="build" depends="build-c,build-java">
 	</target>
@@ -37,7 +12,7 @@
 	</target>
 	<target name="build-javah" depends="build-java">
 		<javah destdir="src/c" classpath="lib">
-			<class name="com.mcdermottroe.apple.OSXKeychain" />
+			<class name="pt.davidafsilva.apple.OSXKeychain" />
 		</javah>
 	</target>
 	<target name="build-c" depends="build-dest,build-javah">
@@ -60,21 +35,21 @@
 			<arg value="-pedantic" />
 			<arg value="-Wall" />
 			<arg value="-o" />
-			<arg value="${basedir}/lib/com/mcdermottroe/apple/osxkeychain.so" />
-			<arg value="com_mcdermottroe_apple_OSXKeychain.c" />
+			<arg value="${basedir}/lib/osxkeychain.so" />
+			<arg value="pt_davidafsilva_apple_OSXKeychain.c" />
 		</exec>
 	</target>
 
 	<target name="codegen" depends="codegen-generate_enums">
 	</target>
 	<target name="codegen-generate_enums" depends="codegen-generate_enums-build">
-		<exec executable="src/c/codegen/generate_enums">
-			<arg value="src/java/com/mcdermottroe/apple/OSXKeychainAuthenticationType.java" />
-			<arg value="src/java/com/mcdermottroe/apple/OSXKeychainProtocolType.java" />
+		<exec executable="lib/generate_enums">
+			<arg value="src/java/pt/davidafsilva/apple/OSXKeychainAuthenticationType.java" />
+			<arg value="src/java/pt/davidafsilva/apple/OSXKeychainProtocolType.java" />
 		</exec>
 	</target>
 	<target name="codegen-generate_enums-build">
-		<exec executable="gcc" dir="src/c/codegen">
+		<exec executable="gcc" dir="src/c/">
 		    <arg value="-arch" />
 		    <arg value="i386" />
 		    <arg value="-arch" />
@@ -86,7 +61,7 @@
 			<arg value="-pedantic" />
 			<arg value="-Wall" />
 			<arg value="-o" />
-			<arg value="generate_enums" />
+			<arg value="../../lib/generate_enums" />
 			<arg value="generate_enums.c" />
 		</exec>
 	</target>
@@ -107,10 +82,9 @@
 	<target name="clean">
 		<delete dir="doc" />
 		<delete dir="lib" />
-		<delete file="src/c/codegen/generate_enums" />
-		<delete file="src/c/com_mcdermottroe_apple_OSXKeychain.h" />
-		<delete file="src/java/com/mcdermottroe/apple/OSXKeychainAuthenticationType.java" />
-		<delete file="src/java/com/mcdermottroe/apple/OSXKeychainProtocolType.java" />
+		<delete file="src/c/pt_davidafsilva_osx_OSXKeychain.h" />
+		<delete file="src/java/pt/davidafsilva/apple/OSXKeychainAuthenticationType.java" />
+		<delete file="src/java/pt/davidafsilva/apple/OSXKeychainProtocolType.java" />
 		<delete file="test/c/fakejni.o" />
 		<delete file="test/c/test" />
 	</target>
@@ -166,7 +140,7 @@
 	<target name="test-java" depends="test-java-no-junit,test-java-junit">
 	</target>
 	<target name="test-java-no-junit" unless="junit.jar">
-		<echo message="You didn't pass a value for junit.jar. Skipping JUnit tests."></echo>
+		<echo message="You didn't pass a value for junit.jar. Skipping JUnit tests."/>
 	</target>
 	<target name="test-java-junit" if="junit.jar">
 		<antcall target="dist" />

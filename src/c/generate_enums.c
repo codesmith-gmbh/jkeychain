@@ -32,7 +32,7 @@
 #include <Security/Security.h>
 
 #define ENUM_CLASS_HEAD(file, classname) fprintf(file, "\
-package com.mcdermottroe.apple;\n\
+package pt.davidafsilva.apple;\n\
 \n\
 /** Auto-generated from Security.h, see the Keychain Services Reference for\n\
  *	descriptions of what these constants mean.\n\

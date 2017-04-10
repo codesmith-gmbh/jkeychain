@@ -26,11 +26,11 @@
 
 #include <Security/Security.h>
 
-#include "com_mcdermottroe_apple_OSXKeychain.h"
+#include "pt_davidafsilva_apple_OSXKeychain.h"
 #include <string.h>
 #include <strings.h>
 
-#define OSXKeychainException "com/mcdermottroe/apple/OSXKeychainException"
+#define OSXKeychainException "pt/davidafsilva/apple/OSXKeychainException"
 
 /* A simplified structure for dealing with jstring objects. Use jstring_unpack
  * and jstring_unpacked_free to manage these.
@@ -116,7 +116,7 @@ void jstring_unpacked_free(JNIEnv *env, jstring js, jstring_unpacked* jsu) {
 /* Implementation of OSXKeychain.addGenericPassword(). See the Java docs for
  * explanations of the parameters.
  */
-JNIEXPORT void JNICALL Java_com_mcdermottroe_apple_OSXKeychain__1addGenericPassword(JNIEnv* env, jobject obj, jstring serviceName, jstring accountName, jstring password) {
+JNIEXPORT void JNICALL Java_pt_davidafsilva_apple_OSXKeychain__1addGenericPassword(JNIEnv* env, jobject obj, jstring serviceName, jstring accountName, jstring password) {
 	OSStatus status;
 	jstring_unpacked service_name;
 	jstring_unpacked account_name;
@@ -157,7 +157,7 @@ JNIEXPORT void JNICALL Java_com_mcdermottroe_apple_OSXKeychain__1addGenericPassw
 	jstring_unpacked_free(env, password, &service_password);
 }
 
-JNIEXPORT void JNICALL Java_com_mcdermottroe_apple_OSXKeychain__1modifyGenericPassword(JNIEnv *env, jobject obj, jstring serviceName, jstring accountName, jstring password) {
+JNIEXPORT void JNICALL Java_pt_davidafsilva_apple_OSXKeychain__1modifyGenericPassword(JNIEnv *env, jobject obj, jstring serviceName, jstring accountName, jstring password) {
 	OSStatus status;
 	jstring_unpacked service_name;
 	jstring_unpacked account_name;
@@ -188,7 +188,23 @@ JNIEXPORT void JNICALL Java_com_mcdermottroe_apple_OSXKeychain__1modifyGenericPa
 		NULL,
 		&existingItem
 	);
-	if (status != errSecSuccess) {
+	if (status == errSecItemNotFound) {
+	   /* add new key */
+	   status = SecKeychainAddGenericPassword(
+       		NULL,
+       		service_name.len,
+       		service_name.str,
+       		account_name.len,
+       		account_name.str,
+       		service_password.len,
+       		service_password.str,
+       		NULL
+       	);
+       	if (status != errSecSuccess) {
+            throw_osxkeychainexception(env, status);
+        }
+	}
+	else if (status != errSecSuccess) {
 		throw_osxkeychainexception(env, status);
 	}
 	else {
@@ -210,72 +226,10 @@ JNIEXPORT void JNICALL Java_com_mcdermottroe_apple_OSXKeychain__1modifyGenericPa
 	jstring_unpacked_free(env, password, &service_password);
 }
 
-
-/* Implementation of OSXKeychain.addInternetPassword(). See the Java docs for
- * explanation of the parameters.
- */
-JNIEXPORT void JNICALL Java_com_mcdermottroe_apple_OSXKeychain__1addInternetPassword(JNIEnv* env, jobject obj, jstring serverName, jstring securityDomain, jstring accountName, jstring path, jint port, jint protocol, jint authenticationType, jstring password) {
-	OSStatus status;
-	jstring_unpacked server_name;
-	jstring_unpacked security_domain;
-	jstring_unpacked account_name;
-	jstring_unpacked server_path;
-	jstring_unpacked server_password;
-
-	/* Unpack the string params. */
-	jstring_unpack(env, serverName, &server_name);
-	jstring_unpack(env, securityDomain, &security_domain);
-	jstring_unpack(env, accountName, &account_name);
-	jstring_unpack(env, path, &server_path);
-	jstring_unpack(env, password, &server_password);
-	/* check for allocation failures */
-	if (server_name.str == NULL || 
-	    security_domain.str == NULL ||
-		account_name.str == NULL || 
-		server_path.str == NULL ||
-		server_password.str == NULL) {
-		jstring_unpacked_free(env, serverName, &server_name);
-		jstring_unpacked_free(env, securityDomain, &security_domain);
-		jstring_unpacked_free(env, accountName, &account_name);
-		jstring_unpacked_free(env, path, &server_path);
-		jstring_unpacked_free(env, password, &server_password);
-		return;
-	}
-
-	/* Add the details to the keychain. */
-	status = SecKeychainAddInternetPassword(
-		NULL,
-		server_name.len,
-		server_name.str,
-		security_domain.len,
-		security_domain.str,
-		account_name.len,
-		account_name.str,
-		server_path.len,
-		server_path.str,
-		port,
-		protocol,
-		authenticationType,
-		server_password.len,
-		server_password.str,
-		NULL
-	);
-	if (status != errSecSuccess) {
-		throw_osxkeychainexception(env, status);
-	}
-
-	/* Clean up. */
-	jstring_unpacked_free(env, serverName, &server_name);
-	jstring_unpacked_free(env, securityDomain, &security_domain);
-	jstring_unpacked_free(env, accountName, &account_name);
-	jstring_unpacked_free(env, path, &server_path);
-	jstring_unpacked_free(env, password, &server_password);
-}
-
 /* Implementation of OSXKeychain.findGenericPassword(). See the Java docs for
  * explanations of the parameters.
  */
-JNIEXPORT jstring JNICALL Java_com_mcdermottroe_apple_OSXKeychain__1findGenericPassword(JNIEnv* env, jobject obj, jstring serviceName, jstring accountName) {
+JNIEXPORT jstring JNICALL Java_pt_davidafsilva_apple_OSXKeychain__1findGenericPassword(JNIEnv* env, jobject obj, jstring serviceName, jstring accountName) {
 	OSStatus status;
 	jstring_unpacked service_name;
 	jstring_unpacked account_name;
@@ -312,7 +266,10 @@ JNIEXPORT jstring JNICALL Java_com_mcdermottroe_apple_OSXKeychain__1findGenericP
 		&password,
 		NULL
 	);
-	if (status != errSecSuccess) {
+	if (status == errSecItemNotFound) {
+	    return NULL;
+	}
+	else if (status != errSecSuccess) {
 		throw_osxkeychainexception(env, status);
 	}
 	else {
@@ -336,94 +293,10 @@ JNIEXPORT jstring JNICALL Java_com_mcdermottroe_apple_OSXKeychain__1findGenericP
 	return result;
 }
 
-/* Implementation of OSXKeychain.findInternetPassword(). See the Java docs for
- * explanations of the parameters.
- */
-JNIEXPORT jstring JNICALL Java_com_mcdermottroe_apple_OSXKeychain__1findInternetPassword(JNIEnv* env, jobject obj, jstring serverName, jstring securityDomain, jstring accountName, jstring path, jint port) {
-	OSStatus status;
-	jstring_unpacked server_name;
-	jstring_unpacked security_domain;
-	jstring_unpacked account_name;
-	jstring_unpacked server_path;
-	jstring result = NULL;
-
-	/* This is the password buffer which will be used by
-	 * SecKeychainFindInternetPassword
-	 */
-	void* password;
-	UInt32 password_length;
-
-	/* Query the keychain */
-	status = SecKeychainSetPreferenceDomain(kSecPreferencesDomainUser);
-	if (status != errSecSuccess) {
-		throw_osxkeychainexception(env, status);
-		return NULL;
-	}
-
-	/* Unpack all the jstrings into useful structures. */
-	jstring_unpack(env, serverName, &server_name);
-	jstring_unpack(env, securityDomain, &security_domain);
-	jstring_unpack(env, accountName, &account_name);
-	jstring_unpack(env, path, &server_path);
-	if (server_name.str == NULL ||
-		security_domain.str == NULL ||
-		account_name.str == NULL || 
-		server_path.str == NULL) {
-		jstring_unpacked_free(env, serverName, &server_name);
-		jstring_unpacked_free(env, securityDomain, &security_domain);
-		jstring_unpacked_free(env, accountName, &account_name);
-		jstring_unpacked_free(env, path, &server_path);		
-		return NULL;
-	}
-
-	status = SecKeychainFindInternetPassword(
-		NULL,
-		server_name.len,
-		server_name.str,
-		security_domain.len,
-		security_domain.str,
-		account_name.len,
-		account_name.str,
-		server_path.len,
-		server_path.str,
-		port,
-		kSecProtocolTypeAny,
-		kSecAuthenticationTypeAny,
-		&password_length,
-		&password,
-		NULL
-	);
-	if (status != errSecSuccess) {
-		throw_osxkeychainexception(env, status);
-	}
-	else {
-		// the returned value from keychain is not 
-		// null terminated, so a copy is created. 
-		char* password_buffer = (char *) malloc(password_length+1);
-		memcpy(password_buffer, password, password_length);
-		password_buffer[password_length] = 0;
-		
-		/* Create the return value. */
-		result = (*env)->NewStringUTF(env, password_buffer);
-
-		/* Clean up. */
-		bzero(password_buffer, password_length);
-		free(password_buffer);
-		SecKeychainItemFreeContent(NULL, password);
-	}
-
-	jstring_unpacked_free(env, serverName, &server_name);
-	jstring_unpacked_free(env, securityDomain, &security_domain);
-	jstring_unpacked_free(env, accountName, &account_name);
-	jstring_unpacked_free(env, path, &server_path);
-
-	return result;
-}
-
 /* Implementation of OSXKeychain.deleteGenericPassword(). See the Java docs for
  * explanations of the parameters.
  */
-JNIEXPORT void JNICALL Java_com_mcdermottroe_apple_OSXKeychain__1deleteGenericPassword(JNIEnv* env, jobject obj, jstring serviceName, jstring accountName) {
+JNIEXPORT void JNICALL Java_pt_davidafsilva_apple_OSXKeychain__1deleteGenericPassword(JNIEnv* env, jobject obj, jstring serviceName, jstring accountName) {
 	OSStatus status;
 	jstring_unpacked service_name;
 	jstring_unpacked account_name;
@@ -455,7 +328,10 @@ JNIEXPORT void JNICALL Java_com_mcdermottroe_apple_OSXKeychain__1deleteGenericPa
 		NULL,
 		&itemToDelete
 	);
-	if (status != errSecSuccess) {
+	if (status == errSecItemNotFound) {
+        return;
+    }
+    else if (status != errSecSuccess) {
 		throw_osxkeychainexception(env, status);
 	}
 	else {

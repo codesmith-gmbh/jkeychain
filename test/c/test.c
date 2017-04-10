@@ -27,7 +27,7 @@
 /* A very simple set of tests for the C portion of this library. */
 
 #include "fakejni.h"
-#include "../../src/c/com_mcdermottroe_apple_OSXKeychain.c"
+#include "../../src/c/pt_davidafsilva_apple_OSXKeychain.c"
 
 #define SERVICE_NAME "Test OS X Keychain from Java"
 #define USERNAME "Test OS X Keychain User"
@@ -42,13 +42,13 @@ int main() {
 	env = &fakejni;
 
 	/* Test a round-trip for a generic password. */
-	Java_com_mcdermottroe_apple_OSXKeychain__1addGenericPassword(&env, NULL, SERVICE_NAME, USERNAME, PASSWORD);
-	genericPassword = Java_com_mcdermottroe_apple_OSXKeychain__1findGenericPassword(&env, NULL, SERVICE_NAME, USERNAME);
+	Java_pt_davidafsilva_apple_OSXKeychain__1addGenericPassword(&env, NULL, SERVICE_NAME, USERNAME, PASSWORD);
+	genericPassword = Java_pt_davidafsilva_apple_OSXKeychain__1findGenericPassword(&env, NULL, SERVICE_NAME, USERNAME);
 	if (strncmp(genericPassword, PASSWORD, strlen(PASSWORD)) != 0) {
 		printf("Failed to round-trip the generic password.\n");
 		return 1;
 	}
-	Java_com_mcdermottroe_apple_OSXKeychain__1deleteGenericPassword(&env, NULL, SERVICE_NAME, USERNAME);
+	Java_pt_davidafsilva_apple_OSXKeychain__1deleteGenericPassword(&env, NULL, SERVICE_NAME, USERNAME);
 
 	return 0;
 }
