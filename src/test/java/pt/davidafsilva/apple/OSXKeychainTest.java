@@ -1,4 +1,4 @@
-package com.mcdermottroe.apple;
+package pt.davidafsilva.apple;
 
 import junit.framework.TestCase;
 

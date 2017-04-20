@@ -1,0 +1,105 @@
+group 'pt.davidafsilva.apple'
+version '0.0.1-SNAPSHOT'
+
+apply plugin: 'java'
+apply plugin: 'idea'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+    jcenter()
+}
+
+sourceSets {
+    generated {
+        java.srcDir "${buildDir}/generated/"
+    }
+
+    main {
+        compileClasspath += generated.output
+        runtimeClasspath += generated.output
+    }
+
+    test {
+        compileClasspath += generated.output
+        runtimeClasspath += generated.output
+    }
+}
+
+task compileEnumGenerator(type: Exec) {
+    new File("${buildDir}/libs").mkdirs()
+    workingDir "${projectDir}/src/main/c"
+    commandLine 'gcc',
+            '-arch',
+            'i386',
+            '-arch',
+            'x86_64',
+            '-mmacosx-version-min=10.5',
+            '-framework',
+            'Security',
+            '-std=c99',
+            '-pedantic',
+            '-Wall',
+            '-o',
+            '../../../build/libs/generate_enums',
+            'generate_enums.c'
+}
+
+task generateEnums(type: Exec) {
+    workingDir "${buildDir}"
+    def basePath = sourceSets.generated.java.asPath + '/pt/davidafsilva/apple/'
+    new File(basePath).mkdirs()
+    def authType = basePath + 'OSXKeychainAuthenticationType.java'
+    def protocolType = basePath + 'OSXKeychainProtocolType.java'
+    commandLine 'libs/generate_enums', authType, protocolType
+    dependsOn compileEnumGenerator
+}
+
+task generateJniHeaders(type: Exec) {
+    def classpath = sourceSets.main.output.classesDir
+    commandLine 'javah',
+            '-d',
+            'src/main/c',
+            '-classpath',
+            classpath,
+            'pt.davidafsilva.apple.OSXKeychain'
+    dependsOn generateEnums
+}
+
+task compileSoLibrary(type: Exec) {
+    new File("${buildDir}/libs").mkdirs()
+    workingDir "${projectDir}/src/main/c"
+    commandLine 'gcc',
+            '-arch',
+            'i386',
+            '-arch',
+            'x86_64',
+            '-mmacosx-version-min=10.5',
+            '-dynamiclib',
+            '-framework',
+            'CoreFoundation',
+            '-framework',
+            'JavaVM',
+            '-framework',
+            'Security',
+            '-I',
+            '/System/Library/Frameworks/JavaVM.framework/Versions/Current/Headers',
+            '-std=c99',
+            '-pedantic',
+            '-Wall',
+            '-o',
+            '../../../build/libs/osxkeychain.so',
+            'pt_davidafsilva_apple_OSXKeychain.c'
+    dependsOn generateJniHeaders
+}
+
+gradle.projectsEvaluated {
+    compileJava.dependsOn(generateEnums, compileSoLibrary)
+}
+
+dependencies {
+    // test
+    testCompile 'junit:junit:4.12'
+}

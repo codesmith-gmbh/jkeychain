@@ -36,12 +36,12 @@ public class OSXKeychain {
    * @throws OSXKeychainException If it's not possible to connect to the
    *                              keychain.
    */
-  public static OSXKeychain getInstance() throws OSXKeychainException {
+  public static OSXKeychain getInstance() throws pt.davidafsilva.apple.OSXKeychainException {
     if (instance == null) {
       try {
         loadSharedObject();
       } catch (IOException e) {
-        throw new OSXKeychainException("Failed to load osxkeychain.so", e);
+        throw new pt.davidafsilva.apple.OSXKeychainException("Failed to load osxkeychain.so", e);
       }
       instance = new OSXKeychain();
     }
@@ -60,7 +60,7 @@ public class OSXKeychain {
    *                              with the OS X keychain.
    */
   public void addGenericPassword(String serviceName, String accountName, String password)
-      throws OSXKeychainException {
+      throws pt.davidafsilva.apple.OSXKeychainException {
     _addGenericPassword(serviceName, accountName, password);
   }
 
@@ -76,12 +76,12 @@ public class OSXKeychain {
    *                              with the OS X keychain.
    */
   public void modifyGenericPassword(String serviceName, String accountName, String password)
-      throws OSXKeychainException {
+      throws pt.davidafsilva.apple.OSXKeychainException {
     _modifyGenericPassword(serviceName, accountName, password);
   }
 
   public String findGenericPassword(String serviceName, String accountName)
-      throws OSXKeychainException {
+      throws pt.davidafsilva.apple.OSXKeychainException {
     return _findGenericPassword(serviceName, accountName);
   }
 
@@ -96,7 +96,7 @@ public class OSXKeychain {
    *                              with the OS X keychain.
    */
   public void deleteGenericPassword(String serviceName, String accountName)
-      throws OSXKeychainException {
+      throws pt.davidafsilva.apple.OSXKeychainException {
     _deleteGenericPassword(serviceName, accountName);
   }
 
@@ -122,7 +122,7 @@ public class OSXKeychain {
    *                              with the OS X keychain.
    */
   private native void _addGenericPassword(String serviceName, String accountName, String password)
-      throws OSXKeychainException;
+      throws pt.davidafsilva.apple.OSXKeychainException;
 
   /**
    * See Java_pt_davidafsilva_ghn_service_options_osx_OSXKeychain__1modifyGenericPassword for
@@ -142,7 +142,7 @@ public class OSXKeychain {
    *                              with the OS X keychain.
    */
   private native void _modifyGenericPassword(String serviceName, String accountName,
-      String password) throws OSXKeychainException;
+      String password) throws pt.davidafsilva.apple.OSXKeychainException;
 
   /**
    * See Java_pt_davidafsilva_ghn_service_options_osx_OSXKeychain__1findGenericPassword for
@@ -160,7 +160,7 @@ public class OSXKeychain {
    *                              with the OS X keychain.
    */
   private native String _findGenericPassword(String serviceName, String accountName)
-      throws OSXKeychainException;
+      throws pt.davidafsilva.apple.OSXKeychainException;
 
   /**
    * See Java_pt_davidafsilva_ghn_service_options_osx_OSXKeychain__1deleteGenericPassword for
@@ -178,7 +178,7 @@ public class OSXKeychain {
    *                              with the OS X keychain.
    */
   private native void _deleteGenericPassword(String serviceName, String accountName)
-      throws OSXKeychainException;
+      throws pt.davidafsilva.apple.OSXKeychainException;
 
   /**
    * Load the shared object which contains the implementations for the native
@@ -214,36 +214,36 @@ public class OSXKeychain {
   /**
    * A fixed mapping of ports to known protocols.
    */
-  private static final Map<Integer,OSXKeychainProtocolType> PROTOCOLS;
+  private static final Map<Integer, pt.davidafsilva.apple.OSXKeychainProtocolType> PROTOCOLS;
 
   static {
     PROTOCOLS = new HashMap<>(32);
-    PROTOCOLS.put(548, OSXKeychainProtocolType.AFP);
-    PROTOCOLS.put(3020, OSXKeychainProtocolType.CIFS);
-    PROTOCOLS.put(2401, OSXKeychainProtocolType.CVSpserver);
-    PROTOCOLS.put(3689, OSXKeychainProtocolType.DAAP);
-    PROTOCOLS.put(3031, OSXKeychainProtocolType.EPPC);
-    PROTOCOLS.put(21, OSXKeychainProtocolType.FTP);
-    PROTOCOLS.put(990, OSXKeychainProtocolType.FTPS);
-    PROTOCOLS.put(80, OSXKeychainProtocolType.HTTP);
-    PROTOCOLS.put(443, OSXKeychainProtocolType.HTTPS);
-    PROTOCOLS.put(143, OSXKeychainProtocolType.IMAP);
-    PROTOCOLS.put(993, OSXKeychainProtocolType.IMAPS);
-    PROTOCOLS.put(631, OSXKeychainProtocolType.IPP);
-    PROTOCOLS.put(6667, OSXKeychainProtocolType.IRC);
-    PROTOCOLS.put(994, OSXKeychainProtocolType.IRCS);
-    PROTOCOLS.put(389, OSXKeychainProtocolType.LDAP);
-    PROTOCOLS.put(636, OSXKeychainProtocolType.LDAPS);
-    PROTOCOLS.put(119, OSXKeychainProtocolType.NNTP);
-    PROTOCOLS.put(563, OSXKeychainProtocolType.NNTPS);
-    PROTOCOLS.put(110, OSXKeychainProtocolType.POP3);
-    PROTOCOLS.put(995, OSXKeychainProtocolType.POP3S);
-    PROTOCOLS.put(554, OSXKeychainProtocolType.RTSP);
-    PROTOCOLS.put(25, OSXKeychainProtocolType.SMTP);
-    PROTOCOLS.put(1080, OSXKeychainProtocolType.SOCKS);
-    PROTOCOLS.put(22, OSXKeychainProtocolType.SSH);
-    PROTOCOLS.put(3690, OSXKeychainProtocolType.SVN);
-    PROTOCOLS.put(23, OSXKeychainProtocolType.Telnet);
-    PROTOCOLS.put(992, OSXKeychainProtocolType.TelnetS);
+    PROTOCOLS.put(548, pt.davidafsilva.apple.OSXKeychainProtocolType.AFP);
+    PROTOCOLS.put(3020, pt.davidafsilva.apple.OSXKeychainProtocolType.CIFS);
+    PROTOCOLS.put(2401, pt.davidafsilva.apple.OSXKeychainProtocolType.CVSpserver);
+    PROTOCOLS.put(3689, pt.davidafsilva.apple.OSXKeychainProtocolType.DAAP);
+    PROTOCOLS.put(3031, pt.davidafsilva.apple.OSXKeychainProtocolType.EPPC);
+    PROTOCOLS.put(21, pt.davidafsilva.apple.OSXKeychainProtocolType.FTP);
+    PROTOCOLS.put(990, pt.davidafsilva.apple.OSXKeychainProtocolType.FTPS);
+    PROTOCOLS.put(80, pt.davidafsilva.apple.OSXKeychainProtocolType.HTTP);
+    PROTOCOLS.put(443, pt.davidafsilva.apple.OSXKeychainProtocolType.HTTPS);
+    PROTOCOLS.put(143, pt.davidafsilva.apple.OSXKeychainProtocolType.IMAP);
+    PROTOCOLS.put(993, pt.davidafsilva.apple.OSXKeychainProtocolType.IMAPS);
+    PROTOCOLS.put(631, pt.davidafsilva.apple.OSXKeychainProtocolType.IPP);
+    PROTOCOLS.put(6667, pt.davidafsilva.apple.OSXKeychainProtocolType.IRC);
+    PROTOCOLS.put(994, pt.davidafsilva.apple.OSXKeychainProtocolType.IRCS);
+    PROTOCOLS.put(389, pt.davidafsilva.apple.OSXKeychainProtocolType.LDAP);
+    PROTOCOLS.put(636, pt.davidafsilva.apple.OSXKeychainProtocolType.LDAPS);
+    PROTOCOLS.put(119, pt.davidafsilva.apple.OSXKeychainProtocolType.NNTP);
+    PROTOCOLS.put(563, pt.davidafsilva.apple.OSXKeychainProtocolType.NNTPS);
+    PROTOCOLS.put(110, pt.davidafsilva.apple.OSXKeychainProtocolType.POP3);
+    PROTOCOLS.put(995, pt.davidafsilva.apple.OSXKeychainProtocolType.POP3S);
+    PROTOCOLS.put(554, pt.davidafsilva.apple.OSXKeychainProtocolType.RTSP);
+    PROTOCOLS.put(25, pt.davidafsilva.apple.OSXKeychainProtocolType.SMTP);
+    PROTOCOLS.put(1080, pt.davidafsilva.apple.OSXKeychainProtocolType.SOCKS);
+    PROTOCOLS.put(22, pt.davidafsilva.apple.OSXKeychainProtocolType.SSH);
+    PROTOCOLS.put(3690, pt.davidafsilva.apple.OSXKeychainProtocolType.SVN);
+    PROTOCOLS.put(23, pt.davidafsilva.apple.OSXKeychainProtocolType.Telnet);
+    PROTOCOLS.put(992, pt.davidafsilva.apple.OSXKeychainProtocolType.TelnetS);
   }
 }
