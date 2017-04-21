@@ -1,5 +1,5 @@
 group 'pt.davidafsilva.apple'
-version '0.0.1-SNAPSHOT'
+version '1.0.0-SNAPSHOT'
 
 apply plugin: 'java'
 apply plugin: 'idea'
@@ -14,14 +14,12 @@ repositories {
 
 sourceSets {
     generated {
-        java.srcDir "${buildDir}/generated/"
+        java.srcDir "${buildDir}/generated-sources/"
     }
-
     main {
         compileClasspath += generated.output
         runtimeClasspath += generated.output
     }
-
     test {
         compileClasspath += generated.output
         runtimeClasspath += generated.output
@@ -29,8 +27,11 @@ sourceSets {
 }
 
 task compileEnumGenerator(type: Exec) {
-    new File("${buildDir}/libs").mkdirs()
-    workingDir "${projectDir}/src/main/c"
+    def libsDir = new File(buildDir, "libs")
+    def genSourcesDir = new File(buildDir, "generated-sources")
+    if (!libsDir.exists()) libsDir.mkdirs()
+    if (!genSourcesDir.exists()) genSourcesDir.mkdirs()
+
     commandLine 'gcc',
             '-arch',
             'i386',
@@ -43,34 +44,37 @@ task compileEnumGenerator(type: Exec) {
             '-pedantic',
             '-Wall',
             '-o',
-            '../../../build/libs/generate_enums',
-            'generate_enums.c'
+            "${buildDir}/libs/generate_enums",
+            "${projectDir}/src/main/c/generate_enums.c"
 }
 
 task generateEnums(type: Exec) {
-    workingDir "${buildDir}"
-    def basePath = sourceSets.generated.java.asPath + '/pt/davidafsilva/apple/'
-    new File(basePath).mkdirs()
-    def authType = basePath + 'OSXKeychainAuthenticationType.java'
-    def protocolType = basePath + 'OSXKeychainProtocolType.java'
-    commandLine 'libs/generate_enums', authType, protocolType
+    def genSources = new File(buildDir, "generated-sources/pt/davidafsilva/apple/")
+    if (!genSources.exists()) genSources.mkdirs()
+    def authType = genSources.absolutePath + '/OSXKeychainAuthenticationType.java'
+    def protocolType = genSources.absolutePath + '/OSXKeychainProtocolType.java'
+
+    commandLine "${buildDir}/libs/generate_enums", authType, protocolType
     dependsOn compileEnumGenerator
 }
 
 task generateJniHeaders(type: Exec) {
-    def classpath = sourceSets.main.output.classesDir
+    def classesDir = sourceSets.main.output.classesDir
+    if (!classesDir.exists()) classesDir.mkdirs()
+
     commandLine 'javah',
             '-d',
-            'src/main/c',
+            "${projectDir}/src/main/c",
             '-classpath',
-            classpath,
+            classesDir,
             'pt.davidafsilva.apple.OSXKeychain'
-    dependsOn generateEnums
+    dependsOn generateEnums, compileJava
 }
 
 task compileSoLibrary(type: Exec) {
-    new File("${buildDir}/libs").mkdirs()
-    workingDir "${projectDir}/src/main/c"
+    def libsDir = new File(buildDir, "libs")
+    if (!libsDir.exists()) libsDir.mkdirs()
+
     commandLine 'gcc',
             '-arch',
             'i386',
@@ -90,14 +94,36 @@ task compileSoLibrary(type: Exec) {
             '-pedantic',
             '-Wall',
             '-o',
-            '../../../build/libs/osxkeychain.so',
-            'pt_davidafsilva_apple_OSXKeychain.c'
+            "${buildDir}/libs/osxkeychain.so",
+            "${projectDir}/src/main/c/pt_davidafsilva_apple_OSXKeychain.c"
     dependsOn generateJniHeaders
 }
 
 gradle.projectsEvaluated {
-    compileJava.dependsOn(generateEnums, compileSoLibrary)
+    compileJava.dependsOn(generateEnums)
+    compileJava.doLast {
+        tasks.compileSoLibrary.execute()
+    }
+    jar {
+        from sourceSets.generated.output, "${buildDir}/libs/osxkeychain.so"
+        manifest {
+            attributes(
+                    "Name": rootProject.name,
+                    "Implementation-Title": rootProject.name,
+                    "Implementation-Version": version,
+                    "Implementation-Vendor": "David Silva"
+            )
+        }
+    }
 }
+
+task copySoLib(type: Copy)
+copySoLib {
+    from "${buildDir}/libs/"
+    into test.testClassesDir
+    include('osxkeychain.so')
+}
+testClasses.doLast { copySoLib.execute() }
 
 dependencies {
     // test

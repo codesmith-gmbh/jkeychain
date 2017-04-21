@@ -4,3 +4,4 @@ test/c/test
 test/c/fakejni.o
 .idea/
 .gradle/
+build/
