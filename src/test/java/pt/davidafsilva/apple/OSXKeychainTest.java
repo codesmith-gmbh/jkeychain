@@ -34,7 +34,7 @@ public class OSXKeychainTest
 
     // Retrieve it from the keychain
     try {
-      String pass = keychain.findGenericPassword(serviceName, userName);
+      String pass = keychain.findGenericPassword(serviceName, userName).orElse(null);
       assertEquals("Retrieved password did not match.", password, pass);
     } catch (OSXKeychainException e) {
       fail("Failed to retrieve generic password");
@@ -68,7 +68,7 @@ public class OSXKeychainTest
 
     // Retrieve it from the keychain
     try {
-      String pass = keychain.findGenericPassword(serviceName, userName);
+      String pass = keychain.findGenericPassword(serviceName, userName).orElse(null);
       assertEquals("Retrieved password did not match.", password1, pass);
     } catch (OSXKeychainException e) {
       e.printStackTrace();
@@ -84,7 +84,7 @@ public class OSXKeychainTest
 
     // Retrieve it from the keychain, expect the updated password now
     try {
-      String pass = keychain.findGenericPassword(serviceName, userName);
+      String pass = keychain.findGenericPassword(serviceName, userName).orElse(null);
       assertEquals("Retrieved password did not match.", password2, pass);
     } catch (OSXKeychainException e) {
       fail("Failed to retrieve generic password");
