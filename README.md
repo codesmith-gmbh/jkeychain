@@ -6,8 +6,11 @@ which has been modified in the following fashion:
 2. Updated *GenericPassword to not thrown an exception when the key was not found
 3. Refactored packaging 
 4. "Gradelized" project
-
+5. TODO: publish to a OSS Repository
 
 ### Usage:
-    OSXKeychain keychain = OSXKeychain.getInstance();
-    Optional<String> password = keychain.findGenericPassword("key", "username");
+
+```java
+final OSXKeychain keychain = OSXKeychain.getInstance();
+final Optional<String> mySecret = keychain.findGenericPassword("mySecret", "username");
+```
