@@ -105,7 +105,11 @@ gradle.projectsEvaluated {
         tasks.compileSoLibrary.execute()
     }
     jar {
-        from sourceSets.generated.output, "${buildDir}/libs/osxkeychain.so"
+        from sourceSets.generated.output
+        from "${buildDir}/libs/osxkeychain.so"
+        from("${projectDir}/LICENSE") {
+            rename "LICENSE", "META-INF/LICENSE.txt"
+        }
         manifest {
             attributes(
                     "Name": rootProject.name,
