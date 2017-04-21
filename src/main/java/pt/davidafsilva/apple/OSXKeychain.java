@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * An interface to the OS X Keychain. The names of functions and parameters
@@ -80,9 +81,9 @@ public class OSXKeychain {
     _modifyGenericPassword(serviceName, accountName, password);
   }
 
-  public String findGenericPassword(String serviceName, String accountName)
+  public Optional<String> findGenericPassword(String serviceName, String accountName)
       throws pt.davidafsilva.apple.OSXKeychainException {
-    return _findGenericPassword(serviceName, accountName);
+    return Optional.ofNullable(_findGenericPassword(serviceName, accountName));
   }
 
   /**
