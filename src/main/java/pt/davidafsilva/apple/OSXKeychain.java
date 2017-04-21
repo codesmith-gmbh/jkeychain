@@ -81,6 +81,16 @@ public class OSXKeychain {
     _modifyGenericPassword(serviceName, accountName, password);
   }
 
+  /**
+   * Finds an existing non-internet password in the keychain
+   * @param serviceName The name of the service the password is
+   *                    for.
+   * @param accountName The account name/username for the
+   *                    service.
+   * @return the password for the service or an empty optional
+   * @throws pt.davidafsilva.apple.OSXKeychainException If an error occurs when communicating
+   *                              with the OS X keychain.
+   */
   public Optional<String> findGenericPassword(String serviceName, String accountName)
       throws pt.davidafsilva.apple.OSXKeychainException {
     return Optional.ofNullable(_findGenericPassword(serviceName, accountName));
