@@ -48,17 +48,16 @@ task compileEnumGenerator(type: Exec) {
             "${projectDir}/src/main/c/generate_enums.c"
 }
 
-task generateEnums(type: Exec) {
+task generateEnums(type: Exec, dependsOn: compileEnumGenerator) {
     def genSources = new File(buildDir, "generated-sources/pt/davidafsilva/apple/")
     if (!genSources.exists()) genSources.mkdirs()
     def authType = genSources.absolutePath + '/OSXKeychainAuthenticationType.java'
     def protocolType = genSources.absolutePath + '/OSXKeychainProtocolType.java'
 
     commandLine "${buildDir}/libs/generate_enums", authType, protocolType
-    dependsOn compileEnumGenerator
 }
 
-task generateJniHeaders(type: Exec) {
+task generateJniHeaders(type: Exec, dependsOn: [generateEnums, compileJava]) {
     def classesDir = sourceSets.main.output.classesDir
     if (!classesDir.exists()) classesDir.mkdirs()
 
@@ -68,10 +67,9 @@ task generateJniHeaders(type: Exec) {
             '-classpath',
             classesDir,
             'pt.davidafsilva.apple.OSXKeychain'
-    dependsOn generateEnums, compileJava
 }
 
-task compileSoLibrary(type: Exec) {
+task compileSoLibrary(type: Exec, dependsOn: generateJniHeaders) {
     def libsDir = new File(buildDir, "libs")
     if (!libsDir.exists()) libsDir.mkdirs()
 
@@ -96,7 +94,6 @@ task compileSoLibrary(type: Exec) {
             '-o',
             "${buildDir}/libs/osxkeychain.so",
             "${projectDir}/src/main/c/pt_davidafsilva_apple_OSXKeychain.c"
-    dependsOn generateJniHeaders
 }
 
 gradle.projectsEvaluated {
@@ -110,14 +107,12 @@ gradle.projectsEvaluated {
         from("${projectDir}/LICENSE") {
             rename "LICENSE", "META-INF/LICENSE.txt"
         }
-        manifest {
-            attributes(
-                    "Name": rootProject.name,
-                    "Implementation-Title": rootProject.name,
-                    "Implementation-Version": version,
-                    "Implementation-Vendor": "David Silva"
-            )
-        }
+        manifest.attributes(
+            "Name": rootProject.name,
+            "Implementation-Title": rootProject.name,
+            "Implementation-Version": version,
+            "Implementation-Vendor": "David Silva"
+        )
     }
 }
 
@@ -128,6 +123,25 @@ copySoLib {
     include('osxkeychain.so')
 }
 testClasses.doLast { copySoLib.execute() }
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource, sourceSets.generated.allSource
+}
+
+javadoc {
+    source = sourceSets.main.allSource + sourceSets.generated.allSource
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+}
 
 dependencies {
     // test
