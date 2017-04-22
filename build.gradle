@@ -6,7 +6,7 @@ apply plugin: 'idea'
 apply plugin: 'maven-publish'
 
 group 'pt.davidafsilva.apple'
-version '1.0.0'
+version '1.0.1-SNAPSHOT'
 description = "Simple Java API to operate on OSX keychain generic passwords Edit"
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
