@@ -212,7 +212,7 @@ publishing {
 
 // bintray configuration
 bintray {
-    user = "davidsilva"
+    user = "davidafsilva"
     key = System.getenv('BINTRAY_KEY')
     publications = ['mavenJava']
     pkg {
