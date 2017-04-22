@@ -15,6 +15,7 @@ repositories {
     jcenter()
 }
 
+// add generated sources support
 sourceSets {
     generated {
         java.srcDir "${buildDir}/generated-sources/"
@@ -29,6 +30,9 @@ sourceSets {
     }
 }
 
+/**
+ * Compiles the enums
+ */
 task compileEnumGenerator(type: Exec) {
     def libsDir = new File(buildDir, "libs")
     def genSourcesDir = new File(buildDir, "generated-sources")
@@ -51,6 +55,9 @@ task compileEnumGenerator(type: Exec) {
             "${projectDir}/src/main/c/generate_enums.c"
 }
 
+/**
+ * Generates the enums Java code
+ */
 task generateEnums(type: Exec, dependsOn: compileEnumGenerator) {
     def genSources = new File(buildDir, "generated-sources/pt/davidafsilva/apple/")
     if (!genSources.exists()) genSources.mkdirs()
@@ -60,6 +67,9 @@ task generateEnums(type: Exec, dependsOn: compileEnumGenerator) {
     commandLine "${buildDir}/libs/generate_enums", authType, protocolType
 }
 
+/**
+ * Generates the JNI class headers
+ */
 task generateJniHeaders(type: Exec, dependsOn: [generateEnums, compileJava]) {
     def classesDir = sourceSets.main.output.classesDir
     if (!classesDir.exists()) classesDir.mkdirs()
@@ -72,6 +82,9 @@ task generateJniHeaders(type: Exec, dependsOn: [generateEnums, compileJava]) {
             'pt.davidafsilva.apple.OSXKeychain'
 }
 
+/**
+ * Compiles the required SO library for the runtime
+ */
 task compileSoLibrary(type: Exec, dependsOn: generateJniHeaders) {
     def libsDir = new File(buildDir, "libs")
     if (!libsDir.exists()) libsDir.mkdirs()
@@ -119,6 +132,7 @@ gradle.projectsEvaluated {
     }
 }
 
+// copy SO to test classpath
 task copySoLib(type: Copy)
 copySoLib {
     from "${buildDir}/libs/"
@@ -127,20 +141,24 @@ copySoLib {
 }
 testClasses.doLast { copySoLib.execute() }
 
+/**
+ * Generates source jar
+ */
 task sourcesJar(type: Jar, dependsOn: classes) {
     classifier = 'sources'
     from sourceSets.main.allSource, sourceSets.generated.allSource
 }
 
-javadoc {
-    source = sourceSets.main.allSource + sourceSets.generated.allSource
-}
-
+/**
+ * Generates javadoc jar
+ */
 task javadocJar(type: Jar, dependsOn: javadoc) {
     classifier = 'javadoc'
     from javadoc.destinationDir
 }
-
+javadoc {
+    source = sourceSets.main.allSource + sourceSets.generated.allSource
+}
 artifacts {
     archives sourcesJar
     archives javadocJar
@@ -151,6 +169,7 @@ dependencies {
     testCompile 'junit:junit:4.12'
 }
 
+// Maven publishing support
 publishing {
     publications {
         mavenJava(MavenPublication) {
@@ -160,7 +179,7 @@ publishing {
             pom.withXml {
                 Node parent = asNode()
 
-                // basic
+                // basic information
                 parent.appendNode('name', project.name)
                 parent.appendNode('description', project.description)
                 parent.appendNode('url', 'https://github.com/davidafsilva/jkeychain')
@@ -174,6 +193,7 @@ publishing {
                 // developer
                 def developersNode = new Node(parent, 'developers')
                 def developerNode = new Node(developersNode, 'developer')
+                developerNode.appendNode('id', 'davidafsilva')
                 developerNode.appendNode('name', 'David Silva')
                 developerNode.appendNode('email', 'david@davidafsilva.pt')
                 developerNode.appendNode('organization', 'GitHub')
@@ -186,10 +206,5 @@ publishing {
                 scmNode.appendNode('url', 'https://github.com/davidafsilva/jkeychain')
             }
         }
-    }
-}
-model {
-    tasks.generatePomFileForMavenJavaPublication {
-        destination = file("$buildDir/generated-pom.xml")
     }
 }
