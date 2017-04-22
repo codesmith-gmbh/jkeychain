@@ -1,14 +1,15 @@
-group 'pt.davidafsilva.apple'
-version '1.0.0-SNAPSHOT'
-
+plugins {
+    id "com.jfrog.bintray" version "1.7.3"
+}
 apply plugin: 'java'
 apply plugin: 'idea'
 apply plugin: 'maven-publish'
 
+group 'pt.davidafsilva.apple'
+version '1.0.0'
+description = "Simple Java API to operate on OSX keychain generic passwords Edit"
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
-
-description = "Simple Java API for accessing OSX keychain generic passwords"
 
 repositories {
     mavenCentral()
@@ -206,5 +207,21 @@ publishing {
                 scmNode.appendNode('url', 'https://github.com/davidafsilva/jkeychain')
             }
         }
+    }
+}
+
+// bintray configuration
+bintray {
+    user = "davidsilva"
+    key = System.getenv('BINTRAY_KEY')
+    publications = ['mavenJava']
+    pkg {
+        repo = "maven"
+        name = project.name
+    }
+    version {
+        name = project.version
+        desc = project.name + " version " +  project.version
+        vcsTag = project.name + "-" + project.version
     }
 }
