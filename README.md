@@ -1,4 +1,4 @@
-# osx-keychain-java
+# jKeychain
 
 This is a fork of [conormcd/osx-keychain-java](https://github.com/conormcd/osx-keychain-java), 
 which has been modified in the following fashion:
