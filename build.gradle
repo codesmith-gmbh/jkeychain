@@ -3,9 +3,12 @@ version '1.0.0-SNAPSHOT'
 
 apply plugin: 'java'
 apply plugin: 'idea'
+apply plugin: 'maven-publish'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
+
+description = "Simple Java API for accessing OSX keychain generic passwords"
 
 repositories {
     mavenCentral()
@@ -108,10 +111,10 @@ gradle.projectsEvaluated {
             rename "LICENSE", "META-INF/LICENSE.txt"
         }
         manifest.attributes(
-            "Name": rootProject.name,
-            "Implementation-Title": rootProject.name,
-            "Implementation-Version": version,
-            "Implementation-Vendor": "David Silva"
+                "Name": rootProject.name,
+                "Implementation-Title": rootProject.name,
+                "Implementation-Version": version,
+                "Implementation-Vendor": "David Silva"
         )
     }
 }
@@ -146,4 +149,47 @@ artifacts {
 dependencies {
     // test
     testCompile 'junit:junit:4.12'
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
+            pom.withXml {
+                Node parent = asNode()
+
+                // basic
+                parent.appendNode('name', project.name)
+                parent.appendNode('description', project.description)
+                parent.appendNode('url', 'https://github.com/davidafsilva/jkeychain')
+
+                // license
+                def licensesNode = new Node(parent, 'licenses')
+                def licenseNode = new Node(licensesNode, 'license')
+                licenseNode.appendNode("name", "BSD 2-Clause License")
+                licenseNode.appendNode("url", "https://opensource.org/licenses/BSD-2-Clause")
+
+                // developer
+                def developersNode = new Node(parent, 'developers')
+                def developerNode = new Node(developersNode, 'developer')
+                developerNode.appendNode('name', 'David Silva')
+                developerNode.appendNode('email', 'david@davidafsilva.pt')
+                developerNode.appendNode('organization', 'GitHub')
+                developerNode.appendNode('organizationUrl', 'https://github.com/davidafsilva/')
+
+                // scm
+                def scmNode = new Node(parent, 'scm')
+                scmNode.appendNode('connection', 'scm:git:git://github.com/davidafsilva/jkeychain.git')
+                scmNode.appendNode('developerConnection', 'scm:git:git://github.com/davidafsilva/jkeychain.git')
+                scmNode.appendNode('url', 'https://github.com/davidafsilva/jkeychain')
+            }
+        }
+    }
+}
+model {
+    tasks.generatePomFileForMavenJavaPublication {
+        destination = file("$buildDir/generated-pom.xml")
+    }
 }
